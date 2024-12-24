@@ -311,3 +311,14 @@ tests:
       - wolfi:distro:wolfi:rolling
     validations:
       - *default-validations
+
+  - provider: podarmor
+    additional_providers:
+      - name: nvd
+        use_cache: true
+    images:
+      - parmor.azurecr.io/nodejs/nodejs:18
+    expected_namespaces:
+      - podarmor:distro:podarmor:12
+    validations:
+      - *default-validations

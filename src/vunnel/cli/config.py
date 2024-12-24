@@ -54,6 +54,7 @@ class Providers:
     sles: providers.sles.Config = field(default_factory=providers.sles.Config)
     ubuntu: providers.ubuntu.Config = field(default_factory=providers.ubuntu.Config)
     wolfi: providers.wolfi.Config = field(default_factory=providers.wolfi.Config)
+    podarmor: providers.podarmor.Config = field(default_factory=providers.podarmor.Config)
 
     common: CommonProviderConfig = field(default_factory=CommonProviderConfig)
 
