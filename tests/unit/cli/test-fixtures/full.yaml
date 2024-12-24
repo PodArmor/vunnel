@@ -68,3 +68,6 @@ providers:
   wolfi:
     runtime: *runtime
     request_timeout: 20
+  podarmor:
+    runtime: *runtime
+    request_timeout: 20
