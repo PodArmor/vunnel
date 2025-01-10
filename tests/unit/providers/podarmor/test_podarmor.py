@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import json
-import os
 import shutil
 
-import pytest
-from vunnel import result, workspace
+
+from vunnel import result
 from vunnel.providers.podarmor import Config, Provider
-from vunnel.providers.podarmor import parser
 
 
 def test_provider_schema(helpers, disable_get_requests):
@@ -22,7 +19,7 @@ def test_provider_schema(helpers, disable_get_requests):
 
     p.update(None)
 
-    assert workspace.num_result_entries() == 189
+    assert workspace.num_result_entries() == 62
     assert workspace.result_schemas_valid(require_entries=True)
 
 

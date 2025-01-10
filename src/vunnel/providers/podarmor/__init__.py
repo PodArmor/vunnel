@@ -27,7 +27,7 @@ class Provider(provider.Provider):
     __schema__ = schema.OSSchema()
     __distribution_version__ = int(__schema__.major_version)
 
-    _url = "http://podarmor.org/api/data/security-advisories"
+    _url = "https://podarmor.org/api/data/security-advisories"
     _namespace = "podarmor"
 
     def __init__(self, root: str, config: Config | None = None):

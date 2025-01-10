@@ -1,12 +1,17 @@
 from __future__ import annotations
 
+import copy
 import logging
 import os
-from urllib.parse import urlparse
+from typing import TYPE_CHECKING, Any
 
 import orjson
 
-from vunnel.utils import http
+if TYPE_CHECKING:
+
+    from vunnel import workspace
+
+from vunnel.utils import http, vulnerability
 
 
 class Parser:
@@ -15,28 +20,23 @@ class Parser:
 
     def __init__(
         self,
-        workspace,
+        workspace: workspace.Workspace,
         url: str,
         namespace: str,
         download_timeout: int = 125,
         logger: logging.Logger | None = None,
-    ):
+    ) -> None:
         self.download_timeout = download_timeout
         self.secdb_dir_path = os.path.join(workspace.input_path, self._secdb_dir_)
-        self.metadata_url = url.strip("/") if url else Parser._url_
         self.url = url
         self.namespace = namespace
-        self._db_filename = self._extract_filename_from_url(url)
+        self._db_filename = "security.json"
 
         if not logger:
             logger = logging.getLogger(self.__class__.__name__)
         self.logger = logger
 
-    @staticmethod
-    def _extract_filename_from_url(url):
-        return os.path.basename(urlparse(url).path)
-
-    def _download(self):
+    def _download(self) -> None:
         """
         Downloads podarmor sec db files
         :return:
@@ -54,7 +54,7 @@ class Parser:
         except Exception:
             self.logger.exception(f"ignoring error processing secdb for {self.url}")
 
-    def _load(self):
+    def _load(self) -> Any:
         """
         Loads all db json and yields it
         :return:
@@ -71,7 +71,7 @@ class Parser:
             self.logger.exception(f"failed to load {self.namespace} sec db data")
             raise
 
-    def _normalize(self, release, data):
+    def _normalize(self, release: str, data: Any) -> dict[str, dict[str, Any]]:
         """
         Normalize all the sec db entries into vulnerability payload records
         :param release:
@@ -79,51 +79,47 @@ class Parser:
         :return:
         """
 
-        vuln_dict = {}
+        vuln_dict: dict[str, Any] = {}
 
         self.logger.debug("normalizing vulnerability data")
-        
+
         for package in data["packages"]:
             pkg_info = package["pkg"]
             pkg_name = pkg_info["name"]
-            
-            # Iterate through each version and its vulnerabilities
-            for version, vulnerabilities in pkg_info["secfixes"].items():
-                for vuln in vulnerabilities:
-                    fixedVersion = version
-                    if version == "0": # "0" means that the CVE has no effect
-                        continue
-                    elif version == "-1":
-                        fixedVersion = "None"
 
-                    cve = vuln["CVE"]
-                    severity = vuln.get("severity", "Unknown")
-                    url = vuln.get("url", "")
-                    
+            # iterate through each version and the fixed vulnerabilities
+            for version, vulns in pkg_info["secfixes"].items():
+                for cve in vulns:
                     if cve not in vuln_dict:
-                        # Create a new vulnerability record
-                        vuln_dict[cve] = {
-                            "Vulnerability": {
-                                "Name": cve,
-                                "NamespaceName": f"{self.namespace}:{release}",
-                                "Link": url,
-                                "Severity": severity,
-                                "FixedIn": []
-                            }
-                        }
-                    
+                        # create a new vulnerability record
+                        vuln_dict[cve] = copy.deepcopy(vulnerability.vulnerability_element)
+                        vuln_record = vuln_dict[cve]
 
+                        vuln_record["Vulnerability"]["Name"] = cve
+                        vuln_record["Vulnerability"]["NamespaceName"] = f"{self.namespace}:{release}"
+
+                        reference_links = vulnerability.build_reference_links(cve)
+                        if reference_links:
+                            vuln_record["Vulnerability"]["Link"] = reference_links[0]
+                        vuln_record["Vulnerability"]["Severity"] = "Unknown"
+                    else:
+                        vuln_record = vuln_dict[cve]
+
+                    fixedVersion = version
+                    if version == "0":  # "0" means that the CVE has no effect
+                        continue
+                    if version == "-1":
+                        fixedVersion = "None"
                     fixed_info = {
                         "Name": pkg_name,
                         "Version": fixedVersion,
                         "VersionFormat": "deb",
-                        "NamespaceName": f"{self.namespace}:{release}"
+                        "NamespaceName": f"{self.namespace}:{release}",
                     }
-                    vuln_dict[cve]["Vulnerability"]["FixedIn"].append(fixed_info)
-
+                    vuln_record["Vulnerability"]["FixedIn"].append(fixed_info)
         return vuln_dict
 
-    def get(self):
+    def get(self) -> Any:
         """
         Download, load and normalize podarmor sec db and return a dict of release - list of vulnerability records
         :return:

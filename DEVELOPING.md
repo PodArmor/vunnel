@@ -362,8 +362,8 @@ Any provider-specific config options can be added to the configuration object as
 
 "Vulnerability matching" is the process of taking a list of vulnerabilities and matching them against a list of packages.
 A provider in this repo is responsible for the "vulnerability" side of this process. The "package" side is handled by
-[Syft](github.com/anchore/syft). A prerequisite for adding a new provider is that Syft can catalog the package types that
-the provider is feeding vulnerability data for, so [Grype](github.com/anchore/grype) can perform the matching from these two sources.
+[Syft](https://github.com/anchore/syft). A prerequisite for adding a new provider is that Syft can catalog the package types that
+the provider is feeding vulnerability data for, so [Grype](https://github.com/anchore/grype) can perform the matching from these two sources.
 
 To add a new provider, you will need to create a new provider class  under `/src/vunnel/providers/<name>` that inherits from `provider.Provider` and implements:
 - `name()`: a unique and semantically-useful name for the provider (same as the name of the directory)
@@ -451,7 +451,7 @@ If you don't have any grype changes needed then you can skip this step.
 
 In order to evaluate the quality of the new provider, we need to know what the expected results are. This is done by
 annotating Grype results with "True Positive" labels (good results) and "False Positive" labels (bad results). We'll use
-[Yardstick](github.com/anchore/yardstick) to do this:
+[Yardstick](https://github.com/anchore/yardstick) to do this:
 
 ```bash
 # note: be certain you are in a "poetry shell" session
@@ -478,7 +478,7 @@ $ yardstick label explore 75d1fe75-0890-4d89-a497-b1050826d9f6
 
 ```
 
-Later we'll open a PR in the [vulnerability-match-labels repo](github.com/anchore/vulnerability-match-labels) to persist these labels.
+Later we'll open a PR in the [vulnerability-match-labels repo](https://github.com/anchore/vulnerability-match-labels) to persist these labels.
 For the meantime we can iterate locally with the labels we've added.
 
 
@@ -500,7 +500,7 @@ This uses the latest Grype-DB release to build a DB and the specified Grype vers
 You are looking for a passing run before continuing further.
 
 
-#### **7. Open a [vulnerability-match-labels repo](github.com/anchore/vulnerability-match-labels) PR to persist the new labels.**
+#### **7. Open a [vulnerability-match-labels repo](https://github.com/anchore/vulnerability-match-labels) PR to persist the new labels.**
 
 Vunnel uses the labels in the vulnerability-Match-Labels repo via a git submodule. We've already added labels locally
 within this submodule in an earlier step. To persist these labels we need to push them to a fork and open a PR:
@@ -522,7 +522,7 @@ $ git commit -m 'add labels for <your-provider-name>'
 $ git push fork add-labels-for-<your-provider-name>
 ```
 
-At this point you can open a PR against in the [vulnerability-match-labels repo](github.com/anchore/vulnerability-match-labels).
+At this point you can open a PR against in the [vulnerability-match-labels repo](https://github.com/anchore/vulnerability-match-labels).
 
 _Note: you will not be able to open a Vunnel PR that passes PR checks until the labels are merged into the vulnerability-match-labels repo._
 

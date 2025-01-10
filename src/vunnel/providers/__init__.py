@@ -13,11 +13,11 @@ from vunnel.providers import (
     mariner,
     nvd,
     oracle,
+    podarmor,
     rhel,
     sles,
     ubuntu,
     wolfi,
-    podarmor
 )
 
 if TYPE_CHECKING:
@@ -31,12 +31,12 @@ _providers: dict[str, type[provider.Provider]] = {
     mariner.Provider.name(): mariner.Provider,
     nvd.Provider.name(): nvd.Provider,
     oracle.Provider.name(): oracle.Provider,
+    podarmor.Provider.name(): podarmor.Provider,
     rhel.Provider.name(): rhel.Provider,
     sles.Provider.name(): sles.Provider,
     ubuntu.Provider.name(): ubuntu.Provider,
     wolfi.Provider.name(): wolfi.Provider,
     chainguard.Provider.name(): chainguard.Provider,
-    podarmor.Provider.name(): podarmor.Provider
 }
 
 
