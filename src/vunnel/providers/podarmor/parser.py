@@ -32,7 +32,7 @@ debian_distro_map = {
 
 
 class Parser:
-    _json_url_ = "http://localhost:4000/api/data/security-advisories"
+    _json_url_ = "https://podarmor.org/api/data/security-advisories"
     _dsa_url_ = "https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DSA/list"
     _json_file_ = "security.json"
     _dsa_file_ = "DSA"
