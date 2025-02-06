@@ -50,6 +50,7 @@ class Providers:
     mariner: providers.mariner.Config = field(default_factory=providers.mariner.Config)
     nvd: providers.nvd.Config = field(default_factory=providers.nvd.Config)
     oracle: providers.oracle.Config = field(default_factory=providers.oracle.Config)
+    podarmor: providers.podarmor.Config = field(default_factory=providers.podarmor.Config)
     rhel: providers.rhel.Config = field(default_factory=providers.rhel.Config)
     sles: providers.sles.Config = field(default_factory=providers.sles.Config)
     ubuntu: providers.ubuntu.Config = field(default_factory=providers.ubuntu.Config)

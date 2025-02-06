@@ -208,6 +208,17 @@ tests:
         max_year: 2021
         fail_on_empty_match_set: false
 
+  - provider: podarmor
+    additional_providers:
+      - name: nvd
+        use_cache: true
+    images:
+      - parmor.azurecr.io/nodejs/nodejs:22@sha256:c48407f171e9af5d5b1177dc49800e7b538fb1f9c5f3477c6258f68ca7b8b192
+    expected_namespaces:
+      - podarmor:distro:podarmor:12
+    validations:
+      - *default-validations
+
   - provider: rhel
     # ideally we would not use cache, however, the ubuntu provider is currently very expensive to run.
     # This will still test incremental updates relative to the nightly cache that is populated.

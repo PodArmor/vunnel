@@ -32,9 +32,9 @@ debian_distro_map = {
 
 
 class Parser:
-    _json_url_ = "https://security-tracker.debian.org/tracker/data/json"
+    _json_url_ = "http://localhost:4000/api/data/security-advisories"
     _dsa_url_ = "https://salsa.debian.org/security-tracker-team/security-tracker/raw/master/data/DSA/list"
-    _json_file_ = "debian.json"
+    _json_file_ = "security.json"
     _dsa_file_ = "DSA"
 
     _dsa_start_regex_ = re.compile(r"^\S+.*")
@@ -61,7 +61,7 @@ class Parser:
 
     def _download_json(self):
         """
-        Downloads debian json file
+        Downloads podarmor json file
         :return:
         """
         try:
@@ -71,12 +71,12 @@ class Parser:
                 OFH.write(r.text)
 
         except Exception:
-            self.logger.exception("Error downloading debian json file")
+            self.logger.exception("Error downloading podarmor json file")
             raise
 
     def _download_dsa(self):
         """
-        Downloads debian dsa file
+        Downloads podarmor dsa file
         :return:
         """
         try:
@@ -85,7 +85,7 @@ class Parser:
                 OFH.write(r.text)
 
         except Exception:
-            self.logger.exception("error downloading debian DSA file")
+            self.logger.exception("error downloading podarmor DSA file")
             raise
 
     def _get_cve_to_dsalist(self, dsa):
@@ -214,57 +214,48 @@ class Parser:
 
             return dsa_map
 
-        raise Exception(f"debian DSA source not found under {self.dsa_file_path}")
+        raise Exception(f"podarmor DSA source not found under {self.dsa_file_path}")
 
     def _normalize_dsa_list(self):
-        ns_cve_dsalist = {}
-        dsa_map = self._get_dsa_map()
+        return True
+        # ns_cve_dsalist = {}
+        # dsa_map = self._get_dsa_map()
 
-        for dsa_collection in dsa_map.values():
-            dsas_with_cves = dsa_collection.cves
+        # for dsa_collection in dsa_map.values():
+        #     dsas_with_cves = dsa_collection.cves
 
-            # Fill in the missing CVEs for some incremental DSAs if you can.
-            # This also filters out DSAs that don't have neither CVEs nor fixed_in records
-            if dsa_collection.nocves and dsas_with_cves:
-                # get the cves from any dsa in the list
-                cve_list = dsas_with_cves[0]["cves"]
-                for dsa in dsa_collection.nocves:
-                    dsa.update({"cves": copy.deepcopy(cve_list)})
+        #     # Fill in the missing CVEs for some incremental DSAs if you can.
+        #     # This also filters out DSAs that don't have neither CVEs nor fixed_in records
+        #     if dsa_collection.nocves and dsas_with_cves:
+        #         # get the cves from any dsa in the list
+        #         cve_list = dsas_with_cves[0]["cves"]
+        #         for dsa in dsa_collection.nocves:
+        #             dsa.update({"cves": copy.deepcopy(cve_list)})
 
-                dsas_with_cves.extend(dsa_collection.nocves)
+        #         dsas_with_cves.extend(dsa_collection.nocves)
 
-            # Invert the data and map DSAs to CVEs to namespaces
-            for dsa in dsas_with_cves:
-                for ns, cve_dsalist in self._get_cve_to_dsalist(dsa).items():
-                    if ns not in ns_cve_dsalist:
-                        ns_cve_dsalist[ns] = {}
-                    for cve, dsalist in cve_dsalist.items():
-                        if cve not in ns_cve_dsalist[ns]:
-                            ns_cve_dsalist[ns][cve] = []
-                        ns_cve_dsalist[ns][cve].extend(dsalist)
+        #     # Invert the data and map DSAs to CVEs to namespaces
+        #     for dsa in dsas_with_cves:
+        #         for ns, cve_dsalist in self._get_cve_to_dsalist(dsa).items():
+        #             if ns not in ns_cve_dsalist:
+        #                 ns_cve_dsalist[ns] = {}
+        #             for cve, dsalist in cve_dsalist.items():
+        #                 if cve not in ns_cve_dsalist[ns]:
+        #                     ns_cve_dsalist[ns][cve] = []
+        #                 ns_cve_dsalist[ns][cve].extend(dsalist)
 
-        dsa_map.clear()
+        # dsa_map.clear()
 
-        return ns_cve_dsalist
+        # return ns_cve_dsalist
 
     def _normalize_json(self, ns_cve_dsalist=None):  # noqa: PLR0912,PLR0915,C901
         adv_mets = {}
-        # all_matched_dsas = set()
-        # all_dsas = set()
-
-        # normalize DSA list
-        # ns_cve_dsalist = normalize_dsa_list(dsaloc)
-
-        # # metrics colleciton
-        # for ns, cve_dsalist in ns_cve_dsalist.iteritems():
-        #     if common.debian_distro_map.get(ns, None):
-        #         all_dsas |= set([dsa_tup.dsa for dsalist in cve_dsalist.values() for dsa_tup in dsalist])
 
         if os.path.exists(self.json_file_path):
             with open(self.json_file_path, encoding="utf-8") as FH:
                 data = orjson.loads(FH.read())
         else:
-            raise Exception(f"debian json source not found under {self.json_file_path}")
+            raise Exception(f"podarmor json source not found under {self.json_file_path}")
 
         if ns_cve_dsalist is None:
             ns_cve_dsalist = {}
@@ -293,7 +284,8 @@ class Parser:
 
                 for rel, distro_record in release_data.items():
                     try:
-                        relno = self.debian_distro_map.get(rel)
+                        # relno = self.debian_distro_map.get(rel)
+                        relno = rel
                         if not relno:
                             continue
 
@@ -346,11 +338,7 @@ class Parser:
                             else:
                                 sev = "Unknown"
 
-                            if (
-                                sev
-                                and vulnerability.severity_order[sev]
-                                > vulnerability.severity_order[vuln_record["Vulnerability"]["Severity"]]
-                            ):
+                            if sev and vulnerability.severity_order[sev] > vulnerability.severity_order[vuln_record["Vulnerability"]["Severity"]]:
                                 vuln_record["Vulnerability"]["Severity"] = sev
 
                             # add fixedIn
@@ -404,22 +392,16 @@ class Parser:
                                         "AdvisorySummary": [{"ID": x.dsa, "Link": x.link} for x in matched_dsas],
                                     }
                                     # all_matched_dsas |= set([x.dsa for x in matched_dsas])
-                                    adv_mets[met_ns][met_sev]["dsa"][
-                                        "notfixed" if fixed_el["Version"] == "None" else "fixed"
-                                    ] += 1
+                                    adv_mets[met_ns][met_sev]["dsa"]["notfixed" if fixed_el["Version"] == "None" else "fixed"] += 1
                                 elif "nodsa" in distro_record:
                                     fixed_el["VendorAdvisory"] = {"NoAdvisory": True}
-                                    adv_mets[met_ns][met_sev]["nodsa"][
-                                        "notfixed" if fixed_el["Version"] == "None" else "fixed"
-                                    ] += 1
+                                    adv_mets[met_ns][met_sev]["nodsa"]["notfixed" if fixed_el["Version"] == "None" else "fixed"] += 1
                                 else:
                                     fixed_el["VendorAdvisory"] = {
                                         "NoAdvisory": False,
                                         "AdvisorySummary": [],
                                     }
-                                    adv_mets[met_ns][met_sev]["neither"][
-                                        "notfixed" if fixed_el["Version"] == "None" else "fixed"
-                                    ] += 1
+                                    adv_mets[met_ns][met_sev]["neither"]["notfixed" if fixed_el["Version"] == "None" else "fixed"] += 1
 
                                 # append fixed in record to vulnerability
                                 vuln_record["Vulnerability"]["FixedIn"].append(fixed_el)
@@ -438,8 +420,6 @@ class Parser:
         self.logger.debug(f"metrics for advisory information: {orjson.dumps(adv_mets).decode('utf-8')}")
 
         adv_mets.clear()
-        # all_dsas.clear()
-        # all_matched_dsas.clear()
 
         return vuln_records
 
@@ -526,17 +506,17 @@ class Parser:
         self._download_dsa()
 
         # normalize dsa list first
-        ns_cve_dsalist = self._normalize_dsa_list()
+        # ns_cve_dsalist = self._normalize_dsa_list()
 
         # normalize json file
-        vuln_records = self._normalize_json(ns_cve_dsalist=ns_cve_dsalist)
+        vuln_records = self._normalize_json()
 
         # fetch records from legacy (if they exist)
-        legacy_records = self._get_legacy_records()
-        for relno, vuln_dict in legacy_records.items():
-            if relno not in vuln_records:
-                vuln_records[relno] = {}
-            vuln_records[relno].update(vuln_dict)
+        # legacy_records = self._get_legacy_records()
+        # for relno, vuln_dict in legacy_records.items():
+        #     if relno not in vuln_records:
+        #         vuln_records[relno] = {}
+        #     vuln_records[relno].update(vuln_dict)
 
         if vuln_records:
             for relno, vuln_dict in vuln_records.items():

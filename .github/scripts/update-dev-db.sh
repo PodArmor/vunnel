@@ -1,3 +1,4 @@
+#!/bin/bash
 set -euo pipefail
 
 BIN_DIR=./bin

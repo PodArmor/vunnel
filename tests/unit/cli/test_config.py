@@ -92,6 +92,10 @@ def test_full_config(helpers):
                 runtime=runtime_cfg,
                 request_timeout=20,
             ),
+            podarmor=providers.podarmor.Config(
+                runtime=runtime_cfg,
+                request_timeout=20,
+            ),
             rhel=providers.rhel.Config(
                 runtime=runtime_cfg,
                 request_timeout=20,

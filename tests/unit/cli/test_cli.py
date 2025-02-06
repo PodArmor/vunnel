@@ -281,6 +281,22 @@ providers:
         retry_delay: 5
       result_store: sqlite
       skip_newer_archive_check: false
+  podarmor:
+    request_timeout: 125
+    runtime:
+      existing_input: keep
+      existing_results: delete-before-write
+      import_results_enabled: false
+      import_results_host: ''
+      import_results_path: providers/{provider_name}/listing.json
+      on_error:
+        action: fail
+        input: keep
+        results: keep
+        retry_count: 3
+        retry_delay: 5
+      result_store: sqlite
+      skip_newer_archive_check: false
   rhel:
     full_sync_interval: 2
     parallelism: 4
