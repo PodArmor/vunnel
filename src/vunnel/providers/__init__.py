@@ -17,6 +17,7 @@ from vunnel.providers import (
     sles,
     ubuntu,
     wolfi,
+    podarmor
 )
 
 if TYPE_CHECKING:
@@ -35,6 +36,7 @@ _providers: dict[str, type[provider.Provider]] = {
     ubuntu.Provider.name(): ubuntu.Provider,
     wolfi.Provider.name(): wolfi.Provider,
     chainguard.Provider.name(): chainguard.Provider,
+    podarmor.Provider.name(): podarmor.Provider
 }
 
 
